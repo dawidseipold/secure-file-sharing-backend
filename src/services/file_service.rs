@@ -10,3 +10,9 @@ pub async fn save_file_to_disk(data: Bytes) -> Result<String, io::Error> {
     
     Ok(uuid.to_string())
 }
+
+pub async fn get_file_from_disk(file_id: String) -> Result<Vec<u8>, io::Error> {
+    let file_path = format!("test_data/{}", file_id);
+    
+    tokio::fs::read(file_path).await
+}

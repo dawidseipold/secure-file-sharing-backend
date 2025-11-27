@@ -1,13 +1,19 @@
 use axum::extract::{Multipart, Path};
 use axum::http::StatusCode;
 use axum::Json;
-use axum::response::IntoResponse;
+use base64::Engine;
+use base64::engine::general_purpose;
 use serde::Serialize;
-use crate::services::file_service::save_file_to_disk;
+use crate::services::file_service::{get_file_from_disk, save_file_to_disk};
 
 #[derive(Serialize)]
 pub struct UploadResponse {
     pub file_id: String
+}
+
+#[derive(Serialize)]
+pub struct FileResponse {
+    pub file_content: String,
 }
 
 #[derive(Serialize)]
@@ -34,10 +40,15 @@ pub async fn upload_file(mut multipart: Multipart) -> Result<Json<UploadResponse
     Err((StatusCode::BAD_REQUEST, Json(ErrorResponse { error: "No file provided in the request".to_string() })))
 }
 
-pub async fn download_file(Path(file_id): Path<String>) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
-    let file = tokio::fs::read(format!("test_data/{}", file_id)).await.map_err(|e|
-        (StatusCode::NOT_FOUND, Json(ErrorResponse { error: format!("Failed to read file: {}", e) }))
+pub async fn download_file(Path(file_id): Path<String>) -> Result<Json<FileResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let file_bytes = get_file_from_disk(file_id).await.map_err(|e|
+        (
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse { error: format!("Failed to read file: {}", e) })
+        )
     )?;
 
-     Ok(file)
+    let encoded = general_purpose::STANDARD.encode(&file_bytes);
+
+    Ok(Json(FileResponse { file_content: encoded }))
 }

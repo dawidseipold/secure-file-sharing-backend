@@ -4,6 +4,7 @@ use axum::Router;
 use axum::routing::{get, post};
 use tower_http::cors::{Any, CorsLayer};
 use crate::api::handlers::{download_file, upload_file};
+use crate::api::key_handlers::{get_key, publish_key};
 
 mod api;
 mod services;
@@ -18,6 +19,8 @@ async fn main() {
     let router = Router::new()
         .route("/upload", post(upload_file))
         .route("/download/{file_id}", get(download_file))
+        .route("/keys", post(publish_key))
+        .route("/keys/{user_id}", get(get_key))
         .layer(DefaultBodyLimit::max(20 * 1024 * 1024))
         .layer(cors);
 
