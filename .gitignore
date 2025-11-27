@@ -1,0 +1,17 @@
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Environment
+.env
+
+# Storage
+uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
