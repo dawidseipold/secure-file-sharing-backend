@@ -13,6 +13,7 @@ mod api;
 mod services;
 mod db;
 mod models;
+mod cleaner;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -22,7 +23,12 @@ pub struct AppState {
 #[tokio::main]
 async fn main() {
     let db = init_db().await.unwrap();
-    let state = AppState { db };
+    let state = AppState { db: db.clone() };
+    let db_for_cleaner = db.clone();
+
+    tokio::spawn(async move {
+        cleaner::start_cleaner(db_for_cleaner).await;
+    });
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -30,11 +36,13 @@ async fn main() {
         .allow_headers(Any);
 
     let router = Router::new()
-        .route("/upload", post(upload_file))
-        .route("/download/{file_id}", get(download_file))
-        .route("/files/user/{user_id}", get(list_user_files))
-        .route("/keys", post(publish_key))
-        .route("/keys/{user_id}", get(get_key))
+        .route("/files", post(upload_file))
+        .route("/files/{file_id}", get(download_file))
+
+        .route("/users", post(publish_key))
+        .route("/users/{user_id}/key", get(get_key))
+        .route("/users/{user_id}/files", get(list_user_files))
+
         .layer(DefaultBodyLimit::max(20 * 1024 * 1024))
         .layer(cors)
         .with_state(state);

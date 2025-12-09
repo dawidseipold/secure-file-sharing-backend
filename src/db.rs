@@ -3,10 +3,10 @@ use surrealdb::Surreal;
 
 
 pub async fn init_db() -> Result<Surreal<Db>, surrealdb::Error> {
-    let db = Surreal::new::<RocksDb>("my_secure_db").await?;
+    let db = Surreal::new::<RocksDb>("db").await?;
 
     db.use_ns("test").await?;
     db.use_db("test").await?;
-    
+
     Ok(db)
 }

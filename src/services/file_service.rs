@@ -26,6 +26,8 @@ pub async fn create_file_record(
         expiration: metadata.expiration,
         note_iv: metadata.note_iv,
         encrypted_note: metadata.encrypted_note,
+        filename: metadata.filename,
+        mime_type: metadata.mime_type,
         file_path: saved_path,
         created_at: chrono::Utc::now().to_rfc3339(),
     };
@@ -42,12 +44,7 @@ pub async fn get_file_from_disk(file_id: String) -> Result<Vec<u8>, io::Error> {
 }
 
 pub async fn list_files_for_user(db: &Surreal<Db>, user_id: String) -> Result<Vec<FileRecord>> {
-    let sql = "\
-        SELECT * FROM files\
-        WHERE recipients[?].user_id\
-        CONTAINS $uid\
-        ORDER BY created_at DESC";
-
+    let sql = "SELECT * FROM files WHERE recipients.user_id CONTAINS $uid ORDER BY created_at DESC";
     let mut response = db.query(sql).bind(("uid", user_id)).await?;
 
     let files: Vec<FileRecord> = response.take(0)?;
@@ -73,7 +70,9 @@ pub async fn get_file_package(
         file_iv: record.file_iv,
         expiration: record.expiration,
         note_iv: record.note_iv,
-        encrypted_note: record.encrypted_note
+        encrypted_note: record.encrypted_note,
+        filename: record.filename,
+        mime_type:  record.mime_type,
     };
 
     Ok(FileDownloadDto {

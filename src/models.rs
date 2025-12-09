@@ -27,10 +27,12 @@ pub struct FileRecord {
     pub expiration: String,
     pub note_iv: Option<String>,
     pub encrypted_note: Option<String>,
+    pub filename: String,
+    pub mime_type: String,
 
     // Backend
     pub file_path: String,
-    pub created_at: String
+    pub created_at: String,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -40,7 +42,9 @@ pub struct MetadataDto {
     pub file_iv: String,
     pub expiration: String,
     pub note_iv: Option<String>,
-    pub encrypted_note: Option<String>
+    pub encrypted_note: Option<String>,
+    pub filename: String,
+    pub mime_type: String,
 }
 
 #[derive(Serialize)]
