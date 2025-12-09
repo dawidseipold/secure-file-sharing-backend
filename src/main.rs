@@ -43,7 +43,7 @@ async fn main() {
         .route("/users/{user_id}/key", get(get_key))
         .route("/users/{user_id}/files", get(list_user_files))
 
-        .layer(DefaultBodyLimit::max(20 * 1024 * 1024))
+        .layer(DefaultBodyLimit::max(100 * 1024 * 1024))
         .layer(cors)
         .with_state(state);
 
